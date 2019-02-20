@@ -1,4 +1,13 @@
-A wikiloop bot working in progress
+## WikiLoop Bot
+
+A wikiloop bot working in progress, check the code in `main.js`
+
+## How To Run
+```bash
+export WP_USER=<yourbot username>
+export WP_PASSWORD=<yourbot password>
+node main.js
+```
 
 ## Disclaimer
 This source code is made public for the purpose of transparency for the Wikipedia communities. Until we figure out a proper licensing, all rights are reserved.
