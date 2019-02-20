@@ -1,7 +1,8 @@
 A wikiloop bot working in progress
 
-## Restrictions
+## Disclaimer
+This project is made public for the purpose of transparency for the Wikipedia communities. Until we figure out a proper licensing, all rights are reserved.
 
-1. from JP wikipedia, rate throttled for 6 times per minute
-
-Refernce dependency: https://github.com/oliver-moran/mediawiki
+## TODO features
+- [ ] rate throttle. e.g. JA wikipedia requires rate at most 6 edits per min
+- [ ] respect bot-exclusion template
