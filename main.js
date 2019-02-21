@@ -1,13 +1,14 @@
 const MWBot = require('mwbot');
 require('dotenv').config();
-const DRY_RUN = false;
+const REAL_RUN = true;
+const REAL_NAMESAPCE = true;
 
 let notifyTitle = {
     en: 'Inconsistent Birthdays',
     fr: 'Anniversaires incohérents',
     de: 'Inkonsistente Geburtstage',
     zh: '生日不一致',
-    jp: '矛盾した誕生日'
+    ja: '矛盾した誕生日'
 
 };
 let notifyText = {
@@ -15,7 +16,7 @@ let notifyText = {
     fr: `Chers rédacteurs qui s'intéressent à ce sujet, nous avons constaté que les anniversaires de ce sujet dans différentes langues de Wikipedia sont incohérents. Pourriez-vous nous aider à vérifier？?`,
     de: `Liebe Redakteure, die an diesem Thema interessiert sind, wir haben festgestellt, dass die Geburtstage dieses Themas in verschiedenen Wikipedia-Sprachen inkonsistent sind. Könntest du helfen zu überprüfen?`,
     zh: `亲爱的本主题有关的编辑们，我们发现这个主题在不同语言的维基百科页面上的生日不一致。 你能帮忙检查一下吗？`,
-    jp: `この主題に興味を持っている編集者の皆さん、この主題の異なるウィキペディアの言語での誕生日は矛盾していることがわかりました。 チェックしてもらえますか？`
+    ja: `この主題に興味を持っている編集者の皆さん、この主題の異なるウィキペディアの言語での誕生日は矛盾していることがわかりました。 チェックしてもらえますか？`
 };
 
 let conflicts = [
@@ -33,16 +34,29 @@ let conflicts = [
 
 const languages = ['ja'];
 function getTalkPageTitle(lang, subject) {
-    if (lang === 'en') return `User:Xinbenlv_bot/sandbox/Project_Wikiloop/unique_value/Talk:${subject}`;
-    else if (lang === 'fr') {
-        return `Utilisateur:Xinbenlv_bot/sandbox/Project_Wikiloop/unique_value/Discussion:${subject}`;
-    } else if (lang === 'zh') {
-        return `User:Xinbenlv_bot/sandbox/Project_Wikiloop/unique_value/Talk:${subject}`;
-    } else if (lang === 'de') {
-        return `Benutzer:Xinbenlv_bot/sandbox/Project_Wikiloop/unique_value/Talk:${subject}`;
-    } else if (lang === 'ja') {
-        return `利用者:Xinbenlv_bot/sandbox/Project_Wikiloop/unique_value/Talk:${subject}`;
-    } throw `lang=${lang} is not supported`;
+    let sandboxPath = (user) => {
+        return {
+            en: `User:${user}/sandbox/Project_Wikiloop/unique_value`,
+            fr: `Utilisateur:${user}/sandbox/Project_Wikiloop/unique_value`,
+            zh: `User:${user}/sandbox/Project_Wikiloop/unique_value`,
+            de: `Benutzer:${user}/sandbox/Project_Wikiloop/unique_value`,
+            ja: `利用者:${user}/sandbox/Project_Wikiloop/unique_value`
+        }[lang];
+    };
+
+    let talkToken = {
+        en: `Talk`,
+        fr: `Discussion`,
+        zh: `Talk`,
+        de: `Diskussion`,
+        ja: `ノート`
+    };
+
+    if (REAL_NAMESAPCE) {
+        return `${talkToken[lang]}:${subject}`;
+    } else {
+        return `${sandboxPath(process.env.WP_USER)}/${talkToken[lang]}:${subject}`
+    }
 }
 
 function getFullUrl(lang, subject) {
@@ -63,7 +77,7 @@ async function main() {
     const csv=require('csvtojson');
     let jsonArray=await csv().fromFile(csvFilePath);
     // console.log(`XXX jsonArray`, jsonArray.slice(0,20));
-    jsonArray = jsonArray.slice(0,8); // TODO(zzn): remove this
+    jsonArray = jsonArray.slice(0,4); // TODO(zzn): remove this
     let dict = {};
     jsonArray.forEach(entry => {
         if (!dict[entry.qid]) {
@@ -103,7 +117,7 @@ async function main() {
     <th>Subject</th>
     <th>Birthday</th>
    </tr>`;
-                for (let _lang of languages) {
+                for (let _lang in conflict) {
                     if (conflict[_lang]) {
                         tableHtml += `
   <tr>
@@ -119,20 +133,19 @@ async function main() {
 = ${notifyTitle[lang]} (Xinbenlv_bot) =
 ${notifyText[lang]}` + tableHtml;
                 let summaryForEdit = 'WikiLoopBot notify the page talk about birthday inconsistency #bot, #wikiloop';
-                if (DRY_RUN) {
-                    console.log(`Dry run ...`);
-                    console.log(`Edit title`, pageTitle);
-                    console.log(`Edit content`, summaryForEdit);
-                    console.log(`Edit summaryForEdit`, summaryForEdit);
-
-                    console.log(`Done fake editing, should have been on ${getFullUrl(lang, conflict[lang]['subject'])}`);
-                } else {
+                if (REAL_RUN) {
                     res = await bot.edit(pageTitle,
                         contentForEdit,
                         summaryForEdit
                     );
                     console.log(`Res =`, JSON.stringify(res, null, '  '));
                     console.log(`Done real editing, see it ${getFullUrl(lang, conflict[lang]['subject'])}`);
+                } else {
+                    console.log(`Dry run ...`);
+                    console.log(`Edit title`, pageTitle);
+                    console.log(`Edit content`, summaryForEdit);
+                    console.log(`Edit summaryForEdit`, summaryForEdit);
+                    console.log(`Done fake editing, should have been on ${getFullUrl(lang, conflict[lang]['subject'])}`);
                 }
 
             }
