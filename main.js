@@ -33,6 +33,7 @@ let conflicts = [
 ];
 
 const languages = ['ja'];
+
 function getTalkPageTitle(lang, subject) {
     let sandboxPath = (user) => {
         return {
@@ -62,6 +63,7 @@ function getTalkPageTitle(lang, subject) {
 function getFullUrl(lang, subject) {
     return `https://${lang}.wikipedia.org/wiki/${getTalkPageTitle(lang, subject)}`;
 }
+
 async function initBot(lang) {
     const bot = new MWBot({
         apiUrl: `https://${lang}.wikipedia.org/w/api.php`
@@ -72,12 +74,13 @@ async function initBot(lang) {
     });
     return bot;
 }
+
 async function main() {
-    const csvFilePath=`data/en_ja.csv`;
-    const csv=require('csvtojson');
-    let jsonArray=await csv().fromFile(csvFilePath);
+    const csvFilePath = `data/en_ja.csv`;
+    const csv = require('csvtojson');
+    let jsonArray = await csv().fromFile(csvFilePath);
     // console.log(`XXX jsonArray`, jsonArray.slice(0,20));
-    jsonArray = jsonArray.slice(0,4); // TODO(zzn): remove this
+    jsonArray = jsonArray.slice(0, 4); // TODO(zzn): remove this
     let dict = {};
     jsonArray.forEach(entry => {
         if (!dict[entry.qid]) {
@@ -128,7 +131,7 @@ async function main() {
                     }
 
                 }
-                tableHtml+='</table>';
+                tableHtml += '</table>';
                 let contentForEdit = oldContent + `
 = ${notifyTitle[lang]} (Xinbenlv_bot) =
 ${notifyText[lang]}` + tableHtml;
@@ -155,7 +158,7 @@ ${notifyText[lang]}` + tableHtml;
     }
 
 
-
 }
+
 // In the root scope of a script, you must use the promise notation, as await is not allowed there.
 main().catch(console.error);
