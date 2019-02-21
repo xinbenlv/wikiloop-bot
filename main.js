@@ -32,7 +32,7 @@ let conflicts = [
     }
 ];
 
-const languages = ['ja'];
+const languages = ['de'];
 
 function getTalkPageTitle(lang, subject) {
     let sandboxPath = (user) => {
@@ -76,7 +76,7 @@ async function initBot(lang) {
 }
 
 async function main() {
-    const csvFilePath = `data/en_ja.csv`;
+    const csvFilePath = `data/en_de.csv`;
     const csv = require('csvtojson');
     let jsonArray = await csv().fromFile(csvFilePath);
     // console.log(`XXX jsonArray`, jsonArray.slice(0,20));
@@ -111,30 +111,29 @@ async function main() {
                     console.log(`Read the page`);
                     let pageId = Object.keys(res.query['pages'])[0];
                     oldContent = res.query['pages'][pageId]['revisions'][0]['*'];
+                    if (/{{(no)?bots(\||}})/i.test(oldContent)) {
+                        console.log(`Found bots related restrictions, for simplicity, we skip it completely. qid=${qid}, pageTitle=${pageTitle}, lang=${lang}`);
+                        continue;
+                    } else if (/Xinbenlv\/msg\/inconsistent_birthday/i.test(oldContent)) {
+                        console.log(`We have touched this page, we skip it completely. qid=${qid}, pageTitle=${pageTitle}, lang=${lang}`);
+                        continue;
+                    } else {
+                        console.log(`XXX old content ok`, oldContent);
+                    }
                 }
-                let tableHtml = `
-<table class="wikitable">
-  <caption>Conflicting Birthdays</caption>
-  <tr>
-    <th>Language</th>
-    <th>Subject</th>
-    <th>Birthday</th>
-   </tr>`;
+                let msgboxTemplateCall = `{{Benutzer:xinbenlv/msg/inconsistent_birthday\n`;
                 for (let _lang in conflict) {
                     if (conflict[_lang]) {
-                        tableHtml += `
-  <tr>
-    <td>${_lang}</td>
-    <td>[[:${_lang}:${conflict[_lang]['subject']}]]</td>
-    <td>${conflict[_lang]['birthday']}</td>
-  </tr>`;
+                        msgboxTemplateCall += `| ${_lang}
+| [[:${_lang}:${conflict[_lang]['subject']}]]
+| [[${conflict[_lang]['birthday']}]]
+`;
                     }
 
                 }
-                tableHtml += '</table>';
-                let contentForEdit = oldContent + `
-= ${notifyTitle[lang]} (Xinbenlv_bot) =
-${notifyText[lang]}` + tableHtml;
+                msgboxTemplateCall += '}}';
+                let contentForEdit = msgboxTemplateCall + oldContent ;
+                console.log(msgboxTemplateCall);
                 let summaryForEdit = 'WikiLoopBot notify the page talk about birthday inconsistency #bot, #wikiloop';
                 if (REAL_RUN) {
                     res = await bot.edit(pageTitle,
