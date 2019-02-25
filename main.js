@@ -1,7 +1,7 @@
 const MWBot = require('mwbot');
 require('dotenv').config();
-const REAL_RUN = true;
-const REAL_NAMESAPCE = true;
+const REAL_RUN = false;
+const REAL_NAMESAPCE = false;
 
 let notifyTitle = {
     en: 'Inconsistent Birthdays',
@@ -32,7 +32,7 @@ let conflicts = [
     }
 ];
 
-const languages = ['de'];
+const languages = ['zh'];
 
 function getTalkPageTitle(lang, subject) {
     let sandboxPath = (user) => {
@@ -76,7 +76,7 @@ async function initBot(lang) {
 }
 
 async function main() {
-    const csvFilePath = `data/en_de.csv`;
+    const csvFilePath = `data/en_zh.csv`;
     const csv = require('csvtojson');
     let jsonArray = await csv().fromFile(csvFilePath);
     // console.log(`XXX jsonArray`, jsonArray.slice(0,20));
@@ -114,14 +114,15 @@ async function main() {
                     if (/{{(no)?bots(\||}})/i.test(oldContent)) {
                         console.log(`Found bots related restrictions, for simplicity, we skip it completely. qid=${qid}, pageTitle=${pageTitle}, lang=${lang}`);
                         continue;
-                    } else if (/Xinbenlv\/msg\/inconsistent_birthday/i.test(oldContent)) {
+                    } else if (/Xinbenlv_bot/i.test(oldContent)) {
                         console.log(`We have touched this page, we skip it completely. qid=${qid}, pageTitle=${pageTitle}, lang=${lang}`);
                         continue;
                     } else {
                         console.log(`XXX old content ok`, oldContent);
                     }
                 }
-                let msgboxTemplateCall = `{{Benutzer:xinbenlv/msg/inconsistent_birthday\n`;
+                let titleMsg = `== ${notifyTitle[lang]} ==\n`;
+                let msgboxTemplateCall = `\n{{User:xinbenlv_bot/msg/inconsistent_birthday\n`;
                 for (let _lang in conflict) {
                     if (conflict[_lang]) {
                         msgboxTemplateCall += `| ${_lang}
@@ -129,10 +130,9 @@ async function main() {
 | [[${conflict[_lang]['birthday']}]]
 `;
                     }
-
                 }
-                msgboxTemplateCall += '}}';
-                let contentForEdit = msgboxTemplateCall + oldContent ;
+                msgboxTemplateCall += `|DATE=${new Date().toISOString()}}}\n`;
+                let contentForEdit = oldContent + titleMsg + msgboxTemplateCall ;
                 console.log(msgboxTemplateCall);
                 let summaryForEdit = 'WikiLoopBot notify the page talk about birthday inconsistency #bot, #wikiloop';
                 if (REAL_RUN) {
@@ -145,7 +145,7 @@ async function main() {
                 } else {
                     console.log(`Dry run ...`);
                     console.log(`Edit title`, pageTitle);
-                    console.log(`Edit content`, summaryForEdit);
+                    console.log(`Edit content\n\n`, contentForEdit, `\n\n`);
                     console.log(`Edit summaryForEdit`, summaryForEdit);
                     console.log(`Done fake editing, should have been on ${getFullUrl(lang, conflict[lang]['subject'])}`);
                 }
