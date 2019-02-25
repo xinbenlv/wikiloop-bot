@@ -1,7 +1,11 @@
 const MWBot = require('mwbot');
 require('dotenv').config();
-const REAL_RUN = false;
-const REAL_NAMESAPCE = false;
+const REAL_RUN = true;
+const REAL_NAMESAPCE = true;
+const Bottleneck = require("bottleneck");
+const limiter = new Bottleneck({
+    minTime: 12000
+});
 
 let notifyTitle = {
     en: 'Inconsistent Birthdays',
@@ -11,26 +15,6 @@ let notifyTitle = {
     ja: '矛盾した誕生日'
 
 };
-let notifyText = {
-    en: `Dear editors interested in this subject,we found that this subject's the birthdays on different Wikipedia languages are inconsistent. Could you help check?`,
-    fr: `Chers rédacteurs qui s'intéressent à ce sujet, nous avons constaté que les anniversaires de ce sujet dans différentes langues de Wikipedia sont incohérents. Pourriez-vous nous aider à vérifier？?`,
-    de: `Liebe Redakteure, die an diesem Thema interessiert sind, wir haben festgestellt, dass die Geburtstage dieses Themas in verschiedenen Wikipedia-Sprachen inkonsistent sind. Könntest du helfen zu überprüfen?`,
-    zh: `亲爱的本主题有关的编辑们，我们发现这个主题在不同语言的维基百科页面上的生日不一致。 你能帮忙检查一下吗？`,
-    ja: `この主題に興味を持っている編集者の皆さん、この主題の異なるウィキペディアの言語での誕生日は矛盾していることがわかりました。 チェックしてもらえますか？`
-};
-
-let conflicts = [
-    {
-        en: {
-            subject: 'Samuel_Gathimba',
-            birthday: '1977-03-05',
-        },
-        fr: {
-            subject: 'Samuel_Gathimba',
-            birthday: '1987-10-26'
-        },
-    }
-];
 
 const languages = ['zh'];
 
@@ -65,14 +49,14 @@ function getFullUrl(lang, subject) {
 }
 
 async function initBot(lang) {
-    const bot = new MWBot({
+    const mwbot = new MWBot({
         apiUrl: `https://${lang}.wikipedia.org/w/api.php`
     });
-    await bot.loginGetEditToken({
+    await mwbot.loginGetEditToken({
         username: process.env.WP_USER,
         password: process.env.WP_PASSWORD
     });
-    return bot;
+    return mwbot;
 }
 
 async function main() {
@@ -80,7 +64,7 @@ async function main() {
     const csv = require('csvtojson');
     let jsonArray = await csv().fromFile(csvFilePath);
     // console.log(`XXX jsonArray`, jsonArray.slice(0,20));
-    jsonArray = jsonArray.slice(0, 4); // TODO(zzn): remove this
+    jsonArray = jsonArray.slice(0, 324); // TODO(zzn): remove this
     let dict = {};
     jsonArray.forEach(entry => {
         if (!dict[entry.qid]) {
@@ -96,14 +80,14 @@ async function main() {
     console.log(`conflicts`, conflicts);
 
     for (let lang of languages) {
-        let bot = await initBot(lang);
+        let mwbot = await initBot(lang);
         for (let qid in conflicts) {
             let conflict = conflicts[qid];
             if (conflict[lang]) {
                 let pageTitle, res;
                 pageTitle = getTalkPageTitle(lang, conflict[lang]['subject']);
                 let oldContent;
-                res = await bot.read(pageTitle);
+                res = await mwbot.read(pageTitle);
                 console.log(res);
                 if (res['query']['pages'][-1]) {
                     oldContent = ''
@@ -121,7 +105,7 @@ async function main() {
                         console.log(`XXX old content ok`, oldContent);
                     }
                 }
-                let titleMsg = `== ${notifyTitle[lang]} ==\n`;
+                let titleMsg = `\n\n== ${notifyTitle[lang]} ==\n`;
                 let msgboxTemplateCall = `\n{{User:xinbenlv_bot/msg/inconsistent_birthday\n`;
                 for (let _lang in conflict) {
                     if (conflict[_lang]) {
@@ -131,15 +115,15 @@ async function main() {
 `;
                     }
                 }
-                msgboxTemplateCall += `|DATE=${new Date().toISOString()}}}\n`;
+                msgboxTemplateCall += `|DATE=${new Date().toISOString()}}}\n\n`;
                 let contentForEdit = oldContent + titleMsg + msgboxTemplateCall ;
                 console.log(msgboxTemplateCall);
                 let summaryForEdit = 'WikiLoopBot notify the page talk about birthday inconsistency #bot, #wikiloop';
                 if (REAL_RUN) {
-                    res = await bot.edit(pageTitle,
+                    res = await limiter.schedule(async () => await mwbot.edit(pageTitle,
                         contentForEdit,
                         summaryForEdit
-                    );
+                    ));
                     console.log(`Res =`, JSON.stringify(res, null, '  '));
                     console.log(`Done real editing, see it ${getFullUrl(lang, conflict[lang]['subject'])}`);
                 } else {
