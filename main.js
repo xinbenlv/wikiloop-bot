@@ -1,10 +1,10 @@
 const MWBot = require('mwbot');
 require('dotenv').config();
 const REAL_RUN = true;
-const REAL_NAMESAPCE = true;
+const REAL_NAMESAPCE = false;
 const Bottleneck = require("bottleneck");
 const limiter = new Bottleneck({
-    minTime: 12000
+    minTime: 3000
 });
 
 let notifyTitle = {
@@ -16,7 +16,7 @@ let notifyTitle = {
 
 };
 
-const languages = ['zh'];
+const languages = ['en'];
 
 function getTalkPageTitle(lang, subject) {
     let sandboxPath = (user) => {
@@ -64,7 +64,7 @@ async function main() {
     const csv = require('csvtojson');
     let jsonArray = await csv().fromFile(csvFilePath);
     // console.log(`XXX jsonArray`, jsonArray.slice(0,20));
-    jsonArray = jsonArray.slice(0, 324); // TODO(zzn): remove this
+    jsonArray = jsonArray.slice(0, 200); // TODO(zzn): remove this
     let dict = {};
     jsonArray.forEach(entry => {
         if (!dict[entry.qid]) {
