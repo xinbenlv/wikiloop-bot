@@ -1,7 +1,7 @@
 const MWBot = require('mwbot');
 require('dotenv').config();
 const REAL_RUN = true;
-const REAL_NAMESAPCE = false;
+const REAL_NAMESAPCE = true;
 const Bottleneck = require("bottleneck");
 const limiter = new Bottleneck({
     minTime: 3000
@@ -16,7 +16,7 @@ let notifyTitle = {
 
 };
 
-const languages = ['en'];
+const languages = ['de'];
 
 function getTalkPageTitle(lang, subject) {
     let sandboxPath = (user) => {
@@ -60,11 +60,11 @@ async function initBot(lang) {
 }
 
 async function main() {
-    const csvFilePath = `data/en_zh.csv`;
+    const csvFilePath = `data/en_de.csv`;
     const csv = require('csvtojson');
     let jsonArray = await csv().fromFile(csvFilePath);
     // console.log(`XXX jsonArray`, jsonArray.slice(0,20));
-    jsonArray = jsonArray.slice(0, 200); // TODO(zzn): remove this
+    jsonArray = jsonArray.slice(0, 40); // TODO(zzn): remove this
     let dict = {};
     jsonArray.forEach(entry => {
         if (!dict[entry.qid]) {
@@ -114,8 +114,9 @@ async function main() {
 | [[${conflict[_lang]['birthday']}]]
 `;
                     }
-                }
-                msgboxTemplateCall += `|DATE=${new Date().toISOString()}}}\n\n`;
+                } 
+				msgboxTemplateCall += `|status=\n|by=\n`;
+				msgboxTemplateCall += `|DATE=${new Date().toISOString()}}}\n\n`;
                 let contentForEdit = oldContent + titleMsg + msgboxTemplateCall ;
                 console.log(msgboxTemplateCall);
                 let summaryForEdit = 'WikiLoopBot notify the page talk about birthday inconsistency #bot, #wikiloop';
