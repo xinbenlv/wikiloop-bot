@@ -20,6 +20,5 @@
       "fixed": "The inconsistency is now '''fixed by {{by}}'''.",
       "validated": "The inconsistency is now '''validated by {{by}}'''."
     }
-  },
-  "key": "hello world!",
+  }
 }
