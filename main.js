@@ -4,7 +4,7 @@ const REAL_RUN = true;
 const REAL_NAMESAPCE = true;
 const Bottleneck = require("bottleneck");
 const limiter = new Bottleneck({
-    minTime: 3000
+    minTime: 5000
 });
 
 let notifyTitle = {
@@ -12,11 +12,14 @@ let notifyTitle = {
     fr: 'Anniversaires incohérents',
     de: 'Inkonsistente Geburtstage',
     zh: '生日不一致',
-    ja: '矛盾した誕生日'
+    ja: '矛盾した誕生日',
+    ru: `Несовместимые Дни рождения`,
+    es: `Cumpleaños inconsistentes`,
+    it: `Compleanni incoerenti`,
 
 };
 
-const languages = ['de'];
+const languages = ['ru'];
 
 function getTalkPageTitle(lang, subject) {
     let sandboxPath = (user) => {
@@ -25,7 +28,10 @@ function getTalkPageTitle(lang, subject) {
             fr: `Utilisateur:${user}/sandbox/Project_Wikiloop/unique_value`,
             zh: `User:${user}/sandbox/Project_Wikiloop/unique_value`,
             de: `Benutzer:${user}/sandbox/Project_Wikiloop/unique_value`,
-            ja: `利用者:${user}/sandbox/Project_Wikiloop/unique_value`
+            ja: `利用者:${user}/sandbox/Project_Wikiloop/unique_value`,
+            ru: `Категория:${user}/sandbox/Project_Wikiloop/unique_value`,
+            es: `Usuario:${user}/sandbox/Project_Wikiloop/unique_value`,
+            it: `Utente:${user}/sandbox/Project_Wikiloop/unique_value`,
         }[lang];
     };
 
@@ -34,7 +40,10 @@ function getTalkPageTitle(lang, subject) {
         fr: `Discussion`,
         zh: `Talk`,
         de: `Diskussion`,
-        ja: `ノート`
+        ja: `ノート`,
+        ru: `Обсуждение`,
+        es: `Discusión`,
+        it: `Discussione`,
     };
 
     if (REAL_NAMESAPCE) {
@@ -60,10 +69,9 @@ async function initBot(lang) {
 }
 
 async function main() {
-    const csvFilePath = `data/en_de.csv`;
+    const csvFilePath = `data/en_ru.csv`;
     const csv = require('csvtojson');
     let jsonArray = await csv().fromFile(csvFilePath);
-    // console.log(`XXX jsonArray`, jsonArray.slice(0,20));
     jsonArray = jsonArray.slice(0, 40); // TODO(zzn): remove this
     let dict = {};
     jsonArray.forEach(entry => {
@@ -102,7 +110,7 @@ async function main() {
                         console.log(`We have touched this page, we skip it completely. qid=${qid}, pageTitle=${pageTitle}, lang=${lang}`);
                         continue;
                     } else {
-                        console.log(`XXX old content ok`, oldContent);
+                        console.log(`Old Content`, oldContent);
                     }
                 }
                 let titleMsg = `\n\n== ${notifyTitle[lang]} ==\n`;
