@@ -4,7 +4,7 @@ const REAL_RUN = true;
 const REAL_NAMESAPCE = true;
 const Bottleneck = require("bottleneck");
 const limiter = new Bottleneck({
-    minTime: 5000
+    minTime: 2000
 });
 
 let notifyTitle = {
@@ -19,7 +19,7 @@ let notifyTitle = {
 
 };
 
-const languages = ['ru'];
+const languages = ['fr'];
 
 function getTalkPageTitle(lang, subject) {
     let sandboxPath = (user) => {
@@ -69,10 +69,10 @@ async function initBot(lang) {
 }
 
 async function main() {
-    const csvFilePath = `data/en_ru.csv`;
+    const csvFilePath = `data/en_fr.csv`;
     const csv = require('csvtojson');
     let jsonArray = await csv().fromFile(csvFilePath);
-    jsonArray = jsonArray.slice(0, 40); // TODO(zzn): remove this
+    jsonArray = jsonArray.slice(0, 2000);
     let dict = {};
     jsonArray.forEach(entry => {
         if (!dict[entry.qid]) {

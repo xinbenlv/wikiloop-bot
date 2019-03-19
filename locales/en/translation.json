@@ -1,4 +1,12 @@
 {
+  "wikipedia": {
+    "discussion": "Talk",
+    "user": "User"
+  },
+
+  "notification": {
+    "title": "Inconsistent Birthdays"
+  },
   "template": {
     "intro": "An automated process has determined that the birth date listed for this article's subject is inconsistent across the different language Wikipedias. Your assistance with checking the sources and correcting this discrepancy would be appreciated.",
     "table": {
