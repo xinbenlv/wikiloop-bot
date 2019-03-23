@@ -1,3 +1,5 @@
+DEPRECATED: This repository is deprecated and code is being moved to a unified wikiloop-code repository for open sourcing.
+
 ## WikiLoop Bot
 
 A wikiloop bot working in progress, check the code in `main.js`

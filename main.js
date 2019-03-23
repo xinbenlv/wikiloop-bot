@@ -13,7 +13,7 @@ let notifyTitle = {
     de: 'Inkonsistente Geburtstage',
     zh: '生日不一致',
     ja: '矛盾した誕生日',
-    ru: `Несовместимые Дни рождения`,
+    ru: `Проверить дату рождения`,
     es: `Cumpleaños inconsistentes`,
     it: `Compleanni incoerenti`,
 
@@ -72,7 +72,7 @@ async function main() {
     const csvFilePath = `data/en_fr.csv`;
     const csv = require('csvtojson');
     let jsonArray = await csv().fromFile(csvFilePath);
-    jsonArray = jsonArray.slice(0, 2000);
+    jsonArray = jsonArray.slice(4001);
     let dict = {};
     jsonArray.forEach(entry => {
         if (!dict[entry.qid]) {
